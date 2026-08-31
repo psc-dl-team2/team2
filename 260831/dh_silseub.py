@@ -14,6 +14,7 @@ dic1 = {}
 dic1["정상"] = sum(df["판정"] == "정상")
 dic1["주의"] = sum(df["판정"] == "주의")
 dic1["이상"] = sum(df["판정"] == "이상")
+
 print(dic1)
 
 # 2
@@ -31,7 +32,7 @@ print(df["진동"].mean().round(2))
 
 # 3
 print(df.duplicated().sum())
-df = df.drop_duplicates()
+df = df.drop_duplicates().reset_index(drop=True)
 print(df.shape)
 
 # 4
@@ -46,7 +47,6 @@ sum = 0
 for i in sensor:
     sum += df[i].isnull().sum()
 print(sum)
-
 print(a.round(2), b.round(2))
 
 # 5
@@ -98,7 +98,7 @@ print(df[sensor].max().to_dict())
 print(df[sensor].mean().round(3).to_dict())
 print(df[["검사일시", "생산라인", "온도", "진동", "회전수", "압력"]].shape)
 df[["검사일시", "생산라인", "온도", "진동", "회전수", "압력"]].to_csv(
-    "정규화_멘티.csv "
+    "정규화_멘티.csv ", index=False, encoding="utf-8-sig"
 )
 
 # df = df.copy()
@@ -113,13 +113,8 @@ df[["검사일시", "생산라인", "온도", "진동", "회전수", "압력"]].
 # return df, 기준
 
 # 10
-for i in df["생산라인"]:
-    if i == "A라인":
-        df["라인코드"] = 0
-    elif i == "B라인":
-        df["라인코드"] = 1
-    elif i == "C라인":
-        df["라인코드"] = 2
+dic = {"A라인": 0, "B라인": 1, "C라인": 2}
+df["라인코드"] = df["생산라인"].map(dic)
 
 df[
     ["검사일시", "생산라인", "라인코드", "온도", "진동", "회전수", "압력", "판정"]
