@@ -91,7 +91,7 @@ for i in sensor:
     mn = df[i].min()
     mx = df[i].max()
     z = (df[i] - mn) / (mx - mn)
-    df[i] = z
+    df[f"z_{i}"] = z
 
 print(df[sensor].min().to_dict())
 print(df[sensor].max().to_dict())
