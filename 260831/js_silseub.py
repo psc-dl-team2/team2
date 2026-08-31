@@ -5,7 +5,7 @@ df = pd.read_csv("설비배치1.csv", encoding="utf-8-sig")
 mte = pd.read_csv("정제결과_멘티.csv", encoding="utf-8-sig")
 mte_norm = pd.read_csv("정규화_멘티.csv", encoding="utf-8-sig")
 sensor = ["온도", "진동", "회전수", "압력"]
-keys = ["검사일시", "생산라인", "설비번호"]
+keys = ["검사일시", "생산라인", "라인코드"]
 
 print("\n ===== 문제 1 =====")
 print(len(df), len(df.drop_duplicates()), len(mte))
@@ -97,3 +97,103 @@ print(mte.groupby("생산라인")["온도"].mean())
 
 중앙값을 사용하면 이상치의 특성이 포함되지 않기에 위와 같은 문제가 발생할 확률이 적다.
 """
+
+
+print("\n ===== 문제 5 =====")
+# print(df.groupby("생산라인")["압력"].count())
+press_c = df[df["생산라인"] == "C라인"]["압력"]
+press_c_std = press_c.std()
+print(press_c_std)
+
+# 1
+press_gb_avg = df.groupby("생산라인")["압력"].mean().to_dict()
+press_gb_std = df.groupby("생산라인")["압력"].std().to_dict()
+press_z = (df["압력"] - df["생산라인"].map(press_gb_avg)) / df["생산라인"].map(
+    press_gb_std
+)
+press_over3 = press_z[press_z > 3]
+print(
+    len(press_over3),
+    df.iloc[press_over3.index.to_list()][["생산라인", "압력"]],
+)
+press_gb_med = df.groupby("생산라인")["압력"].median().to_dict()
+df.loc[press_over3.index, "압력"] = df.loc[press_over3.index, "생산라인"].map(
+    press_gb_med
+)
+print(df.loc[press_over3.index, ["생산라인", "압력"]])
+
+press_c = df[df["생산라인"] == "C라인"]["압력"]
+press_c_std = press_c.std()
+print(press_c_std)
+
+# 2
+press_gb_avg = df.groupby("생산라인")["압력"].mean().to_dict()
+press_gb_std = df.groupby("생산라인")["압력"].std().to_dict()
+press_z = (df["압력"] - df["생산라인"].map(press_gb_avg)) / df["생산라인"].map(
+    press_gb_std
+)
+press_over3 = press_z[press_z > 3]
+print(
+    len(press_over3),
+    df.iloc[press_over3.index.to_list()][["생산라인", "압력"]],
+)
+press_gb_med = df.groupby("생산라인")["압력"].median().to_dict()
+df.loc[press_over3.index, "압력"] = df.loc[press_over3.index, "생산라인"].map(
+    press_gb_med
+)
+print(df.loc[press_over3.index, ["생산라인", "압력"]])
+
+# 3
+press_gb_avg = df.groupby("생산라인")["압력"].mean().to_dict()
+press_gb_std = df.groupby("생산라인")["압력"].std().to_dict()
+press_z = (df["압력"] - df["생산라인"].map(press_gb_avg)) / df["생산라인"].map(
+    press_gb_std
+)
+press_over3 = press_z[press_z > 3]
+print(
+    len(press_over3),
+    df.iloc[press_over3.index.to_list()][["생산라인", "압력"]],
+)
+
+print(df.groupby("생산라인")["압력"].count())
+"""
+평균과 표준편차는 이상치의 값도 포함되어 이상치에 민감하다.
+두번째 필터링에서 새로운 값이 생긴 이유는 이전 이상치를 중앙값으로 수정하여,
+필털핑 범위 축소에 있다.
+세번째 필터링에서 걸러지지 않은 이유는 
+하지만 z점수 필터링을 여러 번하는 게 좋은가?
+>> 과적합 발생 가능성
+"""
+
+print("\n ===== 문제 6 =====")
+for i in sensor:
+    mn = df[i].min()
+    mx = df[i].max()
+    df[f"nor_{i}"] = (df[i] - mn) / (mx - mn)
+
+mto_norm = df[
+    ["검사일시", "생산라인", "nor_온도", "nor_진동", "nor_회전수", "nor_압력"]
+]
+
+print(len(mte_norm), len(mto_norm))
+
+for i in sensor:
+    # diff = abs(mte_norm[i] - mto_norm[f"nor_{i}"])
+    # over_005_count = (diff > 0.05).sum()
+    # max_diff = diff.max()
+    diff = abs(mte_norm[i] - mto_norm[f"nor_{i}"])
+    diff_mx = diff.max()
+    print(i, "차이 최대값 : ", diff_mx.round(5))
+    print(i, "0.05 넘는 개수 : ", (diff > 0.05).sum())
+    if i == "온도":
+        lst = diff.dropna().sort_values(ascending=False).index[:4].to_list()
+
+t4_df = pd.DataFrame(
+    {
+        "검사일시": df.loc[lst, "검사일시"],
+        "생산라인": df.loc[lst, "생산라인"],
+        "멘티값": mte_norm.loc[lst, "온도"],
+        "멘토값": mto_norm.loc[lst, "nor_온도"],
+    }
+)
+print(t4_df)
