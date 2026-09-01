@@ -9,7 +9,7 @@ print(df.shape)
 df1 = df.isnull().sum()
 print(df1[df1 > 0].to_dict())
 print(type(df["전력"][0]).__name__)
-print(df.groupby("상태")["수집시각"].count().to_dict())
+print(df.groupby("상태")["수집시각"].count().sort_values(ascending=False).to_dict())
 
 # 2
 df["전력"] = pd.to_numeric(df["전력"], errors="coerce")
