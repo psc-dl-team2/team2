@@ -141,11 +141,8 @@ for i in dic_df2:
         lst.append(i)
 print(cnt, lst)
 
-df2_mn = df2.groupby("구역")["CPU온도"].min()
-df2_mx = df2.groupby("구역")["CPU온도"].max()
-df2_scaled = (df2["CPU온도"] - df2["구역"].map(df2_mn)) / (
-    df2["구역"].map(df2_mx) - df2["구역"].map(df2_mn)
-)
 
+base_t = pd.read_csv("스케일링기준.csv", encoding="utf-8-sig")
+df2["전력"] = pd.to_numeric(df2["전력"], errors="coerce")
 
 print("===== 문제 4 =====")
